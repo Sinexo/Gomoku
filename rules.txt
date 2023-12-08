@@ -1,0 +1,6 @@
+Les noir commence en premiers.
+Le premier pion doit être posé au centre.
+Les pions doivent être joué sur les 8 cases autour du dernier pions joué
+
+Règles pris de Wikipédia.
+
