@@ -1,2 +1,3 @@
 # Gomoku
-Gomoku en C, avec un algorithme MinMax
+Gomoku en C, avec une ia utilissant l'algorithme MinMax
+
