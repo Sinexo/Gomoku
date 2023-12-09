@@ -8,7 +8,7 @@ CFLAGS = -Wall -g -Werror -fsanitize=address
 TARGET = gomoku
 
 # Fichiers source
-SOURCES = main.c gomoku.c minmax.c move.c
+SOURCES = main.c gomoku.c minmax.c
 
 HEADERS = gomoku.h minmax.h
 

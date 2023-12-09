@@ -2,18 +2,16 @@
 #include "gomoku.h"
 #include <math.h>
 #include <limits.h>
-#include "move.h"
-
 
 int ia_de_fou(int GRID_SIZE,char grid[GRID_SIZE][GRID_SIZE],char symbol){
-	//IA naive, joue aléatoirement.
-	return 0;
+    // IA naive, joue aléatoirement.
+    return 0;
 }
-// Fonction qui évalue le plateau
 
 bool isNear(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int row, int col) {
-    for (int i = -2; i <= 2; i++) {
-        for (int j = -2; j <= 2; j++) {
+    for (int i = -3; i <= 3; i++){
+        for (int j = -1; j <= 1; j++){
+            if (i == 0 && j == 0) continue;
             int x = row + i;
             int y = col + j;
             if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] != EMPTY_CELL) {
@@ -24,7 +22,8 @@ bool isNear(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int row, int col) {
     return false;
 }
 
-int eval(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char symbol) {
+
+int eval(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char symbol, int turn) {
     int score = 0;
     char adversaire = (symbol == PLAYER1) ? PLAYER2 : PLAYER1;
     int count, open, blocked;
@@ -32,9 +31,7 @@ int eval(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char symbol) {
 
     for (int i = 0; i < GRID_SIZE; i++) {
         for (int j = 0; j < GRID_SIZE; j++) {
-            if (grid[i][j] == symbol || grid[i][j] == adversaire) {
-				// if (!isNear(GRID_SIZE, grid, i, j))// pour soulager le processeur, les case avec + de 3 case vide avant un pions sont ignoré, ça limite forcément un peu les possibilité d ejeu mais en théorie ça augmente grandement le temps d'exéc 
-				// 	continue;
+            if (grid[i][j] == symbol || grid[i][j] == adversaire){
                 for (int d = 0; d < 4; d++) {
                     int dx = directions[d][0];
                     int dy = directions[d][1];
@@ -47,84 +44,149 @@ int eval(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char symbol) {
                         int y = j + k * dy;
 
                         if (!isValid(x, y, GRID_SIZE, grid)) break;
-
-                        if (grid[x][y] == grid[i][j]) {
+                        if (grid[x][y] == grid[i][j]){
                             count++;
-                        } else if (grid[x][y] == EMPTY_CELL) {
+                        } else if (grid[x][y] == EMPTY_CELL){
                             open++;
-                            break;
+                            if (open > 1) break;
                         } else {
                             blocked++;
-                            break;
+                            if (blocked > 1) break;
                         }
                     }
 
-                    if (count > 0) {
-                        int sequence_score = 0;
-                        switch (count) {
-                            case 1: sequence_score = 1; break;
-                            case 2: sequence_score = 10; break;
-                            case 3: sequence_score = open > 0 ? 200 : 100; break;
-                            case 4: sequence_score = (open > 0) ? 2000 : 1000; break;
-                            case 5: sequence_score = 10000; break;
-                        }
+    for (int i = 0; i < GRID_SIZE; i++) {
+        for (int j = 0; j < GRID_SIZE; j++){
+            if (grid[i][j] == adversaire) {
+                for (int d = 0; d < 4; d++) {
+                    count = 1; // Compte le nombre de pièces consécutives
+                    int dx = directions[d][0];
+                    int dy = directions[d][1];
 
-                        if (blocked == 2) sequence_score /= 2;
+                    // Comptez vers une direction
+                    int x = i + dx;
+                    int y = j + dy;
+                    while (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] == adversaire){
+                        count++;
+                        x += dx;
+                        y += dy;
+                    }
 
-                        score += (grid[i][j] == symbol) ? sequence_score : -sequence_score;
+                    // Comptez dans la direction opposée
+                    x = i - dx;
+                    y = j - dy;
+                    while (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] == adversaire){
+                        count++;
+                        x -= dx;
+                        y -= dy;
+                    }
+
+                    // Attribuer un score négatif en fonction du nombre de pièces consécutives
+                    if (count >= 4){
+                        score -= 100; // Score négatif important si l'adversaire a 4 pièces en ligne
+                    } else if (count == 3){
+                        score -= 50; // Score négatif moins important pour 3 pièces
                     }
                 }
             }
         }
     }
+                }
+            }
+        }
+    }
+    // Évaluation dynamique basée sur le nombre de tour, pour une raison que jenecomprend pas, si elle ne dure pas toute la partie, l'ia ne fonctionne pascorrectement???
+	// 09/12/13, problème corriger, le problème était la façon dont j'evaluais les coups
+	if (turn < 7) {  // debut departie
+        int centre = GRID_SIZE / 2;
+        for (int i = -1; i <= 1; i++){
+            for (int j = -1; j <= 1; j++){
+                if (grid[centre + i][centre + j] == symbol){
+                    score += 5;
+                }
+            }
+        }}
+		else{  // Phase de milieu et fin de jeu
+        // Prioriser le blocage et la création de menaces
+        for (int i = 0; i < GRID_SIZE; i++){
+            for (int j = 0; j < GRID_SIZE; j++){
+                if (grid[i][j] == adversaire){
+                    for (int d = 0; d < 4; d++){
+                        int dx = directions[d][0];
+                        int dy = directions[d][1];
+                        count = 0;
+                        open = 0;
+                        blocked = 0;
 
+                        for (int k = 0; k < 5; k++){
+                            int x = i + k * dx;
+                            int y = j + k * dy;
+
+                            if (!isValid(x, y, GRID_SIZE, grid))
+								break;
+
+                            if (grid[x][y] == grid[i][j]){
+                                count++;
+                            } else if (grid[x][y] == EMPTY_CELL){
+                                open++;
+                            } else{
+                                blocked++;
+                            }
+                        }
+
+                        if (count >= 3 && open >= 1){
+                            score += 100 * count;
+                        }
+                    }
+                }
+            }
+        }
+    }
     return score;
 }
-// minmax sans élagage alpha-beta
 
-int minimax(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int depth, bool isMax, char player, int* bestRow, int* bestCol, Move *liste, int numCoupValide) {
-    if (depth == 0) {
-        return eval(GRID_SIZE, grid, player);
+
+
+int minimax(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int depth, bool isMax, char player, int* bestRow, int* bestCol,int turn) {
+    if (depth == 0){
+        return eval(GRID_SIZE, grid, player,turn);
     }
 
-    if (isMax) {
+    if (isMax){
         int maxEval = INT_MIN;
-        for (int i = 0; i < numCoupValide; i++) {
-            int row = liste[i].row;
-            int col = liste[i].col;
-            if (grid[row][col] == EMPTY_CELL) {
-                grid[row][col] = player;
-                int eval = minimax(GRID_SIZE, grid, depth - 1, false, player, bestRow, bestCol, liste, numCoupValide);
-                grid[row][col] = EMPTY_CELL;
-                if (eval > maxEval) {
-                    maxEval = eval;
-                    *bestRow = row;
-                    *bestCol = col;
+        for (int row = 0; row < GRID_SIZE; row++){
+            for (int col = 0; col < GRID_SIZE; col++){
+                if (grid[row][col] == EMPTY_CELL && isNear(GRID_SIZE, grid, row, col)){
+                    grid[row][col] = player;
+                    int eval = minimax(GRID_SIZE, grid, depth - 1, false, player, bestRow, bestCol,turn);
+                    grid[row][col] = EMPTY_CELL;
+                    if (eval > maxEval){
+                        maxEval = eval;
+                        *bestRow = row;
+                        *bestCol = col;
+                    }
                 }
             }
         }
+		// printf("\nmax:%d",maxEval);
         return maxEval;
-    } else {
+    } else{
         int minEval = INT_MAX;
-        for (int i = 0; i < numCoupValide; i++) {
-            int row = liste[i].row;
-            int col = liste[i].col;
-            if (grid[row][col] == EMPTY_CELL) {
-                grid[row][col] = (player == PLAYER1) ? PLAYER2 : PLAYER1;
-                int eval = minimax(GRID_SIZE, grid, depth - 1, true, player, bestRow, bestCol, liste, numCoupValide);
-                grid[row][col] = EMPTY_CELL;
-                if (eval < minEval) {
-                    minEval = eval;
-                    *bestRow = row;
-                    *bestCol = col;
+        for (int row = 0; row < GRID_SIZE; row++){
+            for (int col = 0; col < GRID_SIZE; col++){
+                if (grid[row][col] == EMPTY_CELL && isNear(GRID_SIZE, grid, row, col)){
+                    grid[row][col] = (player == PLAYER1) ? PLAYER2 : PLAYER1;
+                    int eval = minimax(GRID_SIZE, grid, depth - 1, true, player, bestRow, bestCol,turn);
+                    grid[row][col] = EMPTY_CELL;
+                    if (eval < minEval){
+                        minEval = eval;
+                        *bestRow = row;
+                        *bestCol = col;
+                    }
                 }
             }
         }
+		// printf("\nmin:%d",minEval);
         return minEval;
     }
 }
-
-
-
-
-

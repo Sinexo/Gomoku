@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "minmax.h"
-#include "move.h"
 
 #define EMPTY_CELL '.'
 #define PLAYER1 'N'
