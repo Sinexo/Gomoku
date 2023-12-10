@@ -33,10 +33,10 @@ int eval(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char symbol, int turn) 
     int count, open, blocked;
     int directions[4][2] = {{0, 1}, {1, 0}, {1, 1}, {-1, 1}};
 
-	if (turn < 10) { // debut departie
+	if (turn < 15) { // debut departie
         int centre = GRID_SIZE / 2;
-        for (int i = -2; i <= 2; i++){
-            for (int j = -2; j <= 2; j++){
+        for (int i = -1; i <= 1; i++){
+            for (int j = -1; j <= 1; j++){
                 if (grid[centre + i][centre + j] == symbol){
                     score += 7;
                 }
@@ -71,10 +71,10 @@ int eval(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char symbol, int turn) 
                             blocked++;
                             if (blocked > 1) break;
                         }
-
+						if (count > 0 && grid[i][j] == symbol){  // inciter l'ia a jouer près de ses pions et pas juste emmerder l'adversaire
+									score+= 8*count;}
 					}
-					// if (count > 0 && grid[i][j] == symbol){  // inciter l'ia a jouer près de ses pions et pas juste emmerder l'adversaire
-					// 		score+= 5*count;}
+
 
 
 	nuissance(GRID_SIZE, grid, adversaire, directions, &score);
@@ -153,7 +153,9 @@ int elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int depth, bool isMax,
                         *bestCol = col;
                     }
 
-					alpha = (alpha > maxEval) ? alpha : maxEval;
+					if (maxEval > alpha) {
+    					alpha = maxEval;
+					}
 					if (beta <= alpha)
     					break;
                 }
@@ -177,7 +179,10 @@ int elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int depth, bool isMax,
                         *bestCol = col;
                     }
 
-					beta = (beta < minEval) ? beta : minEval;
+					if (minEval < beta) {
+						beta = minEval;
+					}
+
 					if (beta <= alpha)
 						break;
                 }
@@ -260,7 +265,7 @@ void nuissance(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char adversaire, 
                     } else if (count == 3) {
                         *score -= 50;
                     } else if (count == 2) {
-                        *score -= 5;
+                        *score -= 2;
                     }
                 }
             }

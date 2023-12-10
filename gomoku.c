@@ -209,7 +209,7 @@ void play_eve_elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
 			if (turn == 1)
 				grid[GRID_SIZE/2][GRID_SIZE/2] = PLAYER1;
 			else{
-            elage(GRID_SIZE, grid, 5, true, PLAYER1, &MoveRowBlack, &MoveColBlack,turn,INT_MIN,INT_MAX);
+            elage(GRID_SIZE, grid, 3, true, PLAYER1, &MoveRowBlack, &MoveColBlack,turn,INT_MIN,INT_MAX);
         	grid[MoveRowBlack][MoveColBlack] = PLAYER1;
 			}
             if (checkWin(GRID_SIZE, grid, MoveRowBlack, MoveColBlack, PLAYER1)){
@@ -221,7 +221,7 @@ void play_eve_elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
             // tour de l'ia (Blanc)
             printf("Tour de l'Ordinateur 2 \n");
             int MoveRow, MoveCol;
-            elage(GRID_SIZE, grid, 5, false, PLAYER2, &MoveRow, &MoveCol,turn,INT_MIN,INT_MAX);
+            elage(GRID_SIZE, grid, 3, false, PLAYER2, &MoveRow, &MoveCol,turn,INT_MIN,INT_MAX);
         	grid[MoveRow][MoveCol] = PLAYER2;
 
             if (checkWin(GRID_SIZE, grid, MoveRow, MoveCol, PLAYER2)){
