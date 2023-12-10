@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "minmax.h"
+#include "limits.h"
 
 //#define GRID_SIZE 15
 #define EMPTY_CELL '.'
@@ -69,7 +70,7 @@ void play_pvp(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
 	while (!game_over){
 		printGrid(GRID_SIZE, grid);
 		printf("Tour :%d\n", turn);
-		printf("Au tour du Joueur %d (entrer dans cette ordre : Ligne, Colonne ): ", turn % 2 + 1);
+		printf("Au tour du Joueur %d (entrer dans cette ordre : Ligne, Colonne ): ", turn % 2+1);
 		scanf("%d %d", &row, &col);
 
 		if (turn == 1 && (row != GRID_SIZE / 2 || col != GRID_SIZE / 2)){
@@ -153,6 +154,93 @@ void play_pve(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]) {
 void play_eve(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
     bool game_over = false;
     int turn = 1;
+    // int row, col;
+	int PionJ1 = 60,PionJ2=60;
+
+    while (!game_over){
+        printGrid(GRID_SIZE, grid);
+        if (turn % 2 == 1) {
+			//tour du joueur (Noir)
+            printf("Tour de l'Ordinateur 1 \n");
+            int MoveRowBlack, MoveColBlack;
+			if (turn == 1)
+				grid[GRID_SIZE/2][GRID_SIZE/2] = PLAYER1;
+			else{
+            minimax(GRID_SIZE, grid, 3, true, PLAYER1, &MoveRowBlack, &MoveColBlack,turn);
+        	grid[MoveRowBlack][MoveColBlack] = PLAYER1;
+			}
+            if (checkWin(GRID_SIZE, grid, MoveRowBlack, MoveColBlack, PLAYER1)){
+                printf("L'Ordinateur a gagné.\n");
+                game_over = true;
+            }
+        }
+        else {
+            // tour de l'ia (Blanc)
+            printf("Tour de l'Ordinateur 2 \n");
+            int MoveRow, MoveCol;
+            minimax(GRID_SIZE, grid, 3, false, PLAYER2, &MoveRow, &MoveCol,turn);
+        	grid[MoveRow][MoveCol] = PLAYER2;
+
+            if (checkWin(GRID_SIZE, grid, MoveRow, MoveCol, PLAYER2)){
+                printf("L'Ordinateur a gagné.\n");
+                game_over = true;
+            }
+        }
+        turn++;
+		(turn % 2 == 0) ? PionJ1-- : PionJ2--;
+		if (PionJ1 == 0 && PionJ2 == 0){
+			printf("\033[1;32mPlus de pions,aucun joueur n'a gagné, Egalité !\033[1;0ms");
+			game_over = true;
+		}
+    }
+}
+void play_eve_elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
+    bool game_over = false;
+    int turn = 1;
+    // int row, col;
+	int PionJ1 = 60,PionJ2=60;
+
+    while (!game_over){
+        printGrid(GRID_SIZE, grid);
+        if (turn % 2 == 1) {
+			//tour du joueur (Noir)
+            printf("Tour de l'Ordinateur 1 \n");
+            int MoveRowBlack, MoveColBlack;
+			if (turn == 1)
+				grid[GRID_SIZE/2][GRID_SIZE/2] = PLAYER1;
+			else{
+            elage(GRID_SIZE, grid, 5, true, PLAYER1, &MoveRowBlack, &MoveColBlack,turn,INT_MIN,INT_MAX);
+        	grid[MoveRowBlack][MoveColBlack] = PLAYER1;
+			}
+            if (checkWin(GRID_SIZE, grid, MoveRowBlack, MoveColBlack, PLAYER1)){
+                printf("L'Ordinateur a gagné.\n");
+                game_over = true;
+            }
+        }
+        else {
+            // tour de l'ia (Blanc)
+            printf("Tour de l'Ordinateur 2 \n");
+            int MoveRow, MoveCol;
+            elage(GRID_SIZE, grid, 5, false, PLAYER2, &MoveRow, &MoveCol,turn,INT_MIN,INT_MAX);
+        	grid[MoveRow][MoveCol] = PLAYER2;
+
+            if (checkWin(GRID_SIZE, grid, MoveRow, MoveCol, PLAYER2)){
+                printf("L'Ordinateur a gagné.\n");
+                game_over = true;
+            }
+        }
+        turn++;
+		(turn % 2 == 0) ? PionJ1-- : PionJ2--;
+		if (PionJ1 == 0 && PionJ2 == 0){
+			printf("\033[1;32mPlus de pions,aucun joueur n'a gagné, Egalité !\033[1;0ms");
+			game_over = true;
+		}
+    }
+}
+
+void play_pve_elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]) {
+    bool game_over = false;
+    int turn = 1;
     int row, col;
 	int PionJ1 = 60,PionJ2=60, nbrPion=0;
 
@@ -160,22 +248,29 @@ void play_eve(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
         printGrid(GRID_SIZE, grid);
         if (turn % 2 == 1) {
 			//tour du joueur (Noir)
-            printf("Tour de l'Ordinateur\n");
-            int MoveRow, MoveCol;
-            minimax(GRID_SIZE, grid, 3, false, PLAYER2, &MoveRow, &MoveCol,turn);
-        	grid[MoveRow][MoveCol] = PLAYER2;
-			nbrPion++;
+            printf("Votre tour (entrer dans cette ordre : Ligne, Colonne ): ");
+            scanf("%d %d", &row, &col);
 
-            if (checkWin(GRID_SIZE, grid, MoveRow, MoveCol, PLAYER2)){
-                printf("L'Ordinateur a gagné.\n");
+            if (turn == 1 && (row != GRID_SIZE / 2 || col != GRID_SIZE / 2)){
+                printf("\033[1;31m Le premier pion doit être joué au centre, soit %d,%d\033[1;0m\n", GRID_SIZE / 2, GRID_SIZE / 2);
+                continue;
+            }
+
+            if (!isValid(row, col, GRID_SIZE, grid)){
+				printf("\033[1;31m Vous ne pouvez pas jouer ici.\033[1;0m\n");
+                continue;
+			}
+            grid[row][col] = PLAYER1;
+			nbrPion++;
+            if (checkWin(GRID_SIZE, grid, row, col, PLAYER1)){
+                printf("Félicitations ! Vous avez gagné.\n");
                 game_over = true;
             }
-        }
-        else {
+        } else {
             // tour de l'ia (Blanc)
             printf("Tour de l'Ordinateur\n");
             int MoveRow, MoveCol;
-            minimax(GRID_SIZE, grid, 3, false, PLAYER2, &MoveRow, &MoveCol,turn);
+            elage(GRID_SIZE, grid, 3, false, PLAYER2, &MoveRow, &MoveCol,turn,INT_MIN,INT_MAX);
         	grid[MoveRow][MoveCol] = PLAYER2;
 			nbrPion++;
 
@@ -192,4 +287,3 @@ void play_eve(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
 		}
     }
 }
-void play_eve_elage(); // jeu ia vs ia mais avec l'élage alpha_beta
