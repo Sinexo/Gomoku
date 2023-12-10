@@ -7,18 +7,18 @@
 void nuissance(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char adversaire, int directions[4][2], int* score);
 void midgame(int GRID_SIZE,char grid[GRID_SIZE][GRID_SIZE],char adversaire,int directions[4][2],int * score);
 
-int ia_de_fou(int GRID_SIZE,char grid[GRID_SIZE][GRID_SIZE],char symbol){
-    // IA naive, joue aléatoirement.
-    return 0;
+void ia_de_fou(int GRID_SIZE,char grid[GRID_SIZE][GRID_SIZE],char symbol,int *row,int *col){
+    *row = rand()% (GRID_SIZE+1);
+	*col = rand()% (GRID_SIZE+1);
 }
 
-bool isNear(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int row, int col) {
+bool isNear(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int row, int col){
     for (int i = -3; i <= 3; i++){
         for (int j = -1; j <= 1; j++){
             if (i == 0 && j == 0) continue;
             int x = row + i;
             int y = col + j;
-            if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] != EMPTY_CELL) {
+            if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] != EMPTY_CELL){
                 return true;
             }
         }
@@ -27,7 +27,7 @@ bool isNear(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int row, int col) {
 }
 
 // void midgame(int GRID_SIZE,char grid[GRID_SIZE][GRID_SIZE],int* count,int *open,int * blocked,char adversaire,int directions[4][2],int * score)
-int eval(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char symbol, int turn) {
+int eval(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char symbol, int turn){
     int score = 0;
     char adversaire = (symbol == PLAYER1) ? PLAYER2 : PLAYER1;
     int count, open, blocked;
@@ -133,66 +133,85 @@ int minimax(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int depth, bool isMa
     }
 }
 
-int elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int depth, bool isMax, char player, int* bestRow, int* bestCol, int turn, int alpha, int beta) {
+
+// en me basant sur les ressources que vous m'avez envoyez en plus de l'aider d'un tuteur j'ai réussi a optimiser un peu plus l'elage et supprimer les problèmes que j'avais, 
+//j'ai voulus mettre la même optimisation sur le minmax de base mais je n'ai pas réussi par manque de temsp (il est actuelle 23h45 quand j'écrit cette ligne)
+int elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int depth, bool isMax, char player, int* bestRow, int* bestCol, int turn, int alpha, int beta, int maxDepth) {
     if (depth == 0) {
         return eval(GRID_SIZE, grid, player, turn);
     }
 
     if (isMax) {
         int maxEval = INT_MIN;
-        for (int row = 0; row < GRID_SIZE; row++) {
-            for (int col = 0; col < GRID_SIZE; col++) {
-                if (grid[row][col] == EMPTY_CELL && isNear(GRID_SIZE, grid, row, col)) {
+        for (int row = 0; row < GRID_SIZE; row++){
+            for (int col = 0; col < GRID_SIZE; col++){
+                if (grid[row][col] == EMPTY_CELL && isNear(GRID_SIZE, grid, row, col)){
                     grid[row][col] = player;
-                    int eval = elage(GRID_SIZE, grid, depth - 1, false, player, bestRow, bestCol, turn, alpha, beta);
+                    int eval = elage(GRID_SIZE, grid, depth - 1, false, player, bestRow, bestCol, turn, alpha, beta, maxDepth);
                     grid[row][col] = EMPTY_CELL;
 
-                    if (eval > maxEval || (eval == maxEval && rand() % 11 > 0)) {
+                    if (eval > maxEval || (eval == maxEval && rand() % 11 > 0)){
                         maxEval = eval;
-                        *bestRow = row;
-                        *bestCol = col;
+                        if (depth == maxDepth){
+                            *bestRow = row;
+                            *bestCol = col;
+                        }
                     }
 
-					if (maxEval > alpha) {
-    					alpha = maxEval;
-					}
-					if (beta <= alpha)
-    					break;
+                    if (eval > alpha){
+                        alpha = eval;
+                    } else if (eval == alpha && rand() % 11 > 0){
+                        alpha = eval;
+                    }
+
+                    if (alpha >= beta){
+                        break;
+                    }
                 }
             }
-            if (beta <= alpha)
+            if (alpha >= beta){
                 break;
+            }
         }
         return maxEval;
-    } else {
+    } else{
         int minEval = INT_MAX;
-        for (int row = 0; row < GRID_SIZE; row++) {
-            for (int col = 0; col < GRID_SIZE; col++) {
-                if (grid[row][col] == EMPTY_CELL && isNear(GRID_SIZE, grid, row, col)) {
+        for (int row = 0; row < GRID_SIZE; row++){
+            for (int col = 0; col < GRID_SIZE; col++){
+                if (grid[row][col] == EMPTY_CELL && isNear(GRID_SIZE, grid, row, col)){
                     grid[row][col] = (player == PLAYER1) ? PLAYER2 : PLAYER1;
-                    int eval = elage(GRID_SIZE, grid, depth - 1, true, player, bestRow, bestCol, turn, alpha, beta);
+                    int eval = elage(GRID_SIZE, grid, depth - 1, true, player, bestRow, bestCol, turn, alpha, beta, maxDepth);
                     grid[row][col] = EMPTY_CELL;
 
-                    if (eval < minEval || (eval == minEval && rand() % 11 > 0)) {
+                    if (eval < minEval || (eval == minEval && rand() % 11 > 0)){
                         minEval = eval;
-                        *bestRow = row;
-                        *bestCol = col;
+                        if (depth == maxDepth){
+                            *bestRow = row;
+                            *bestCol = col;
+                        }
                     }
 
-					if (minEval < beta) {
-						beta = minEval;
-					}
+                    if (eval < beta){
+                        beta = eval;
+                    } else if (eval == beta && rand() % 11 > 0){
+                        beta = eval;
+                    }
 
-					if (beta <= alpha)
-						break;
+                    if (beta <= alpha){
+                        break;
+                    }
                 }
             }
-            if (beta <= alpha)
+            if (beta <= alpha){
                 break;
+            }
         }
         return minEval;
     }
 }
+
+
+
 
 
 void midgame(int GRID_SIZE,char grid[GRID_SIZE][GRID_SIZE],char adversaire,int directions[4][2],int * score){
@@ -231,12 +250,12 @@ void midgame(int GRID_SIZE,char grid[GRID_SIZE][GRID_SIZE],char adversaire,int d
             }
         }
 }
-void nuissance(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char adversaire, int directions[4][2], int* score) {
+void nuissance(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char adversaire, int directions[4][2], int* score){
     int count;
     for (int i = 0; i < GRID_SIZE; i++) {
-        for (int j = 0; j < GRID_SIZE; j++) {
-            if (grid[i][j] == adversaire) {
-                for (int d = 0; d < 4; d++) {
+        for (int j = 0; j < GRID_SIZE; j++){
+            if (grid[i][j] == adversaire){
+                for (int d = 0; d < 4; d++){
                     count = 1;
                     int dx = directions[d][0];
                     int dy = directions[d][1];
@@ -244,7 +263,7 @@ void nuissance(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char adversaire, 
 
                     int x = i + dx;
                     int y = j + dy;
-                    while (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] == adversaire) {
+                    while (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] == adversaire){
                         count++;
                         x += dx;
                         y += dy;
@@ -253,18 +272,18 @@ void nuissance(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], char adversaire, 
                     // direction opposé a la précédente
                     x = i - dx;
                     y = j - dy;
-                    while (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] == adversaire) {
+                    while (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] == adversaire){
                         count++;
                         x -= dx;
                         y -= dy;
                     }
 
 
-                    if (count >= 4) {
+                    if (count >= 4){
                         *score -= 100;
-                    } else if (count == 3) {
+                    } else if (count == 3){
                         *score -= 50;
-                    } else if (count == 2) {
+                    } else if (count == 2){
                         *score -= 2;
                     }
                 }

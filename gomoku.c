@@ -41,7 +41,7 @@ bool checkWin(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int row, int col, 
 			y += dy;
 		}
 		x = row - dx;
-		y = col - dy; 
+		y = col - dy;
 		while (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && grid[x][y] == symbol){
 			count++;
 			x -= dx;
@@ -209,7 +209,7 @@ void play_eve_elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
 			if (turn == 1)
 				grid[GRID_SIZE/2][GRID_SIZE/2] = PLAYER1;
 			else{
-            elage(GRID_SIZE, grid, 3, true, PLAYER1, &MoveRowBlack, &MoveColBlack,turn,INT_MIN,INT_MAX);
+            elage(GRID_SIZE, grid, 3, true, PLAYER1, &MoveRowBlack, &MoveColBlack,turn,INT_MIN,INT_MAX,3);
         	grid[MoveRowBlack][MoveColBlack] = PLAYER1;
 			}
             if (checkWin(GRID_SIZE, grid, MoveRowBlack, MoveColBlack, PLAYER1)){
@@ -221,7 +221,7 @@ void play_eve_elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]){
             // tour de l'ia (Blanc)
             printf("Tour de l'Ordinateur 2 \n");
             int MoveRow, MoveCol;
-            elage(GRID_SIZE, grid, 3, false, PLAYER2, &MoveRow, &MoveCol,turn,INT_MIN,INT_MAX);
+            elage(GRID_SIZE, grid, 3, false, PLAYER2, &MoveRow, &MoveCol,turn,INT_MIN,INT_MAX,3);
         	grid[MoveRow][MoveCol] = PLAYER2;
 
             if (checkWin(GRID_SIZE, grid, MoveRow, MoveCol, PLAYER2)){
@@ -270,7 +270,7 @@ void play_pve_elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE]) {
             // tour de l'ia (Blanc)
             printf("Tour de l'Ordinateur\n");
             int MoveRow, MoveCol;
-            elage(GRID_SIZE, grid, 3, false, PLAYER2, &MoveRow, &MoveCol,turn,INT_MIN,INT_MAX);
+            elage(GRID_SIZE, grid, 4, false, PLAYER2, &MoveRow, &MoveCol,turn,INT_MIN,INT_MAX,4);
         	grid[MoveRow][MoveCol] = PLAYER2;
 			nbrPion++;
 
