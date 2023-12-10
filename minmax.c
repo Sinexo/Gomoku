@@ -182,7 +182,7 @@ int elage(int GRID_SIZE, char grid[GRID_SIZE][GRID_SIZE], int depth, bool isMax,
 						break;
                 }
             }
-            if (beta >= alpha)
+            if (beta <= alpha)
                 break;
         }
         return minEval;
